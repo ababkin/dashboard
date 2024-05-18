@@ -1,0 +1,20 @@
+[package]
+name = "dashboard"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../shared" }
+chrono = "0.4"
+console_error_panic_hook = "0.1"
+console_log = "1.0"
+leptos = { version = "0.6.11", features = ["csr", "serde"] }
+leptos-chartistry = "0.1.5"
+leptos_meta = { version = "0.6.11", features = ["csr"] }
+leptos_server_signal = "0.6"
+leptos-use = "0.10"
+log = "0.4"
+rand = "0.8.5"
+serde = { version = "1.0", features = ["derive"] }
+web-sys = "0.3"
+js-sys = "0.3"
