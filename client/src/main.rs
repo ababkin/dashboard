@@ -12,6 +12,7 @@ use shared::types::*;
 
 use crate::pages::chart::Chartistry;
 use crate::pages::plotly::Plotly;
+use crate::pages::mermaid::Mermaid;
 
 
 #[component]
@@ -30,6 +31,10 @@ pub fn App() -> impl IntoView {
 
         <h2>Plotly</h2>
         <Plotly/>
+
+        <h2>Mermaid</h2>
+        <Mermaid/>
+
         <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
     }
 }
