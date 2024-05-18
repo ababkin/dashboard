@@ -3,7 +3,7 @@ use leptos::*;
 use leptos_chartistry::*;
 
 #[component]
-pub fn Example() -> impl IntoView {
+pub fn Chartistry() -> impl IntoView {
     let (debug, _) = create_signal(false);
 
     view! {

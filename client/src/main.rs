@@ -3,12 +3,15 @@ use leptos_meta::provide_meta_context;
 // use leptos_router::*;
 
 mod pages;
+mod plots;
 mod data;
-use crate::pages::chart::Example;
 use leptos_server_signal::create_server_signal;
 use serde::{Deserialize, Serialize};
 
 use shared::types::*;
+
+use crate::pages::chart::Chartistry;
+use crate::pages::plotly::Plotly;
 
 
 #[component]
@@ -22,7 +25,11 @@ pub fn App() -> impl IntoView {
     let event = create_server_signal::<WsEvent>("counter");
 
     view! { 
-        <Example/>
+        <h2>Chartistry</h2>
+        <Chartistry/>
+
+        <h2>Plotly</h2>
+        <Plotly/>
         <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
     }
 }
