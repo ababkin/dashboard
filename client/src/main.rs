@@ -1,5 +1,6 @@
 use leptos::*;
 use leptos_meta::provide_meta_context;
+use anyhow::{ Error, anyhow };
 // use leptos_router::*;
 
 mod pages;
@@ -13,6 +14,7 @@ use shared::types::*;
 use crate::pages::chart::Chartistry;
 use crate::pages::plotly::Plotly;
 use crate::pages::mermaid::Mermaid;
+use crate::pages::observable_plot::ObservablePlot;
 
 
 #[component]
@@ -34,6 +36,9 @@ pub fn App() -> impl IntoView {
 
         <h2>Mermaid</h2>
         <Mermaid/>
+
+        <h2>Observable Plot</h2>
+        <ObservablePlot/>
 
         <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
     }

@@ -5,15 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+
     <script data-trunk src="/assets/mermaid.min.js"></script>
     <link data-trunk rel="inline" type="js" href="/assets/mermaid_config.js"/>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
+
     <link data-trunk rel="rust" data-wasm-opt="z" />
     <link data-trunk rel="css" href="assets/demo.css" />
     <link data-trunk rel="css" href="assets/demo-normalise.css" />
     <!-- <link data-trunk rel="rust" data-wasm-opt="4" data-weak-refs data-reference-types/> -->
     <base data-trunk-public-url/>
+
+
+    <!-- <script type="module">
+        const binXprops = {y: "count"};
+        const rand = {x: Math.random};
+        const binX = Plot.binX(binXprops, rand);
+        const plottable = Plot.rectY({length: 10000}, binX);
+        const plot = plottable.plot();
+        const div = document.querySelector("#myplot");
+        div.append(plot);
+    </script> -->
 </head>
 
-<body></body>
+<body>
+    <!-- <div id="myplot"></div> -->
+</body>
 
 </html>

@@ -659,6 +659,7 @@ dependencies = [
 name = "dashboard"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "console_error_panic_hook",
  "console_log",
@@ -672,6 +673,8 @@ dependencies = [
  "plotly",
  "rand",
  "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
  "shared",
  "wasm-bindgen-futures",
  "web-sys",
