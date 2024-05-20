@@ -12,10 +12,12 @@ use axum::{
     routing::get,
     Router
 };
+use tower_http::cors::{Any, CorsLayer};
 
 
-mod ws_server; use ws_server::*;
-mod data_server; use data_server::*;
+
+// mod ws_server; use ws_server::*;
+mod data_server;
 use shared::types::*;
 
 pub const DEFAULT_LOG_LEVEL: &str = "DEBUG";
@@ -56,7 +58,28 @@ async fn main() {
     setup_tracing();
 
     // build our application with a single route
-    let app = Router::new().route("/ws", get(ws_handler));
+    // let app = Router::new().route("/ws", get(ws_handler));
+
+    let app = Router::new()
+        .route("/ws", get(move |ws: WebSocketUpgrade| {
+            // Use the cloned ws_list inside the closure
+            websocket_handler(ws)
+        }));
+
+    // let app = Router::new()
+    // .route("/ws", get(ws_handler))
+    // .layer(
+    //     CorsLayer::new()
+    //         .allow_origin(Any)
+    //         .allow_methods(Any)
+    //         .allow_headers(Any),
+    // );
+
+//     var wss = new WebSocketServer({ port: env.PORT, headers: {
+//         "Access-Control-Allow-Origin": "*",
+//         "Access-Control-Allow-Headers": "http://localhost:3000",
+//         "Access-Control-Allow-Methods": "PUT, GET, POST, DELETE, OPTIONS"
+// } });
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
@@ -71,7 +94,12 @@ async fn main() {
         .unwrap();
 }
 
-async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
+pub async fn websocket_handler(ws: WebSocketUpgrade) -> axum::response::Response {
     debug!("upgrading to ws connection...");
-    ws.on_upgrade(handle_socket)
+    ws.on_upgrade(|socket| data_server::handle_socket(socket))
 }
+
+// async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
+//     debug!("upgrading to ws connection...");
+//     ws.on_upgrade(handle_socket)
+// }

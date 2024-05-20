@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 
 use shared::types::*;
 
-use crate::pages::chart::Chartistry;
+use crate::pages::chartistry::Chartistry;
+use crate::pages::data_chartistry::DataChartistry;
 use crate::pages::plotly::Plotly;
 use crate::pages::mermaid::Mermaid;
 use crate::pages::observable_plot::ObservablePlot;
@@ -22,7 +23,7 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     // Provide websocket connection
-    // leptos_server_signal::provide_websocket("ws://localhost:5000/ws").unwrap();
+    leptos_server_signal::provide_websocket("ws://localhost:5000/ws").unwrap();
 
     // Create server signal
     // let event = create_server_signal::<WsEvent>("counter");
@@ -39,6 +40,9 @@ pub fn App() -> impl IntoView {
 
         // <h2>Observable Plot</h2>
         // <ObservablePlot/>
+
+        <h2>Data fed chartistry</h2>
+        <DataChartistry/>
 
         // <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
     }

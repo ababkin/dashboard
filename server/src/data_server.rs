@@ -21,9 +21,12 @@ use tracing::{debug, error, info, instrument, span, warn, Level};
 pub async fn handle_socket(mut socket: WebSocket) {
     debug!("handling ws connection...");
     while let Some(Ok(Message::Text(_))) = socket.next().await {
+
+        debug!("got invite for data");
+
         // Create a Polars DataFrame
         let df = df![
-            "a" => &[1, 2, 3, 4, 5],
+            "a" => &[1i64, 2, 3, 4, 5],
             "b" => &[1.1, 2.2, 3.3, 4.4, 5.5]
         ].unwrap();
 
@@ -37,14 +40,7 @@ pub async fn handle_socket(mut socket: WebSocket) {
             Arc::new(Float64Array::from(df.column("b").unwrap().f64().unwrap().to_vec())) as Arc<dyn arrow::array::Array>,
         ]).unwrap();
 
-        // Serialize the RecordBatch to Parquet format (for storage or other uses)
-        let mut parquet_buffer = Cursor::new(vec![]);
-        let props = WriterProperties::builder().build();
-        let mut parquet_writer = ArrowWriter::try_new(&mut parquet_buffer, schema.clone(), Some(props)).unwrap();
-        parquet_writer.write(&batch).unwrap();
-        parquet_writer.close().unwrap();
-
-        // Serialize the RecordBatch to Arrow IPC stream (sent to client)
+        // Serialize the RecordBatch to Arrow IPC stream
         let mut ipc_buffer = Cursor::new(vec![]);
         {
             let mut ipc_writer = StreamWriter::try_new(&mut ipc_buffer, &schema).unwrap();
@@ -54,6 +50,7 @@ pub async fn handle_socket(mut socket: WebSocket) {
 
         // Send the binary data over WebSocket
         let data = ipc_buffer.into_inner();
+        debug!("writing data to ws connection: {:?}", data);
         if socket.send(Message::Binary(data)).await.is_err() {
             break;
         }

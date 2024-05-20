@@ -23,7 +23,7 @@ pub async fn run(rcv: mpsc::Receiver<WsEvent>) {
     let ws_list = Arc::new(Mutex::new(Vec::new()));
 
     // Clone ws_list for the WebSocket route handler
-    let ws_list_for_handler = ws_list.clone();
+    let ws_list_for_handler = Arc::clone(&ws_list);
 
     let app = Router::new()
         .route("/ws", get(move |ws: WebSocketUpgrade| {
