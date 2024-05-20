@@ -12,6 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/apache-arrow@8.0.0/umd/Arrow.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.2.4/dist/plot.umd.min.js"></script> -->
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
     <link data-trunk rel="rust" data-wasm-opt="z" />
@@ -21,58 +24,72 @@
     <base data-trunk-public-url/>
 
 
-    <!-- <script type="module">
-        const binXprops = {y: "count"};
-        const rand = {x: Math.random};
-        const binX = Plot.binX(binXprops, rand);
-        const plottable = Plot.rectY({length: 10000}, binX);
-        const plot = plottable.plot();
-        const div = document.querySelector("#myplot");
-        div.append(plot);
-    </script> -->
 </head>
 
 <body>
-    <!-- <div id="myplot"></div> -->
     <div id="plot-container"></div>
+    <!-- <div id="plot"></div> -->
+    <script>
+        const ws = new WebSocket('ws://127.0.0.1:5000/ws/');
 
-    <script type="module">
+        ws.binaryType = 'arraybuffer';
 
-        const data = [
-        {date: new Date(2023, 0, 1), value: 100},
-        {date: new Date(2023, 0, 2), value: 110},
-        // more data points...
-        ];
-
-        // const startEnd = Mutable(null);
-        // const setStartEnd = (se) => startEnd.value = se;
-
-        const setStartEnd = (selection) => {
-            if (selection) {
-                console.log("Selected range:", selection);
+        ws.onmessage = async (event) => {
+            if (typeof event.data === 'string') {
+                console.log('Received text message:', event.data);
             } else {
-                console.log("Selection cleared");
-            }
-            };
+                const buffer = new Uint8Array(event.data);
+                const table = arrow.tableFromIPC(buffer);
 
-        const plot = Plot.plot({
-            marks: [
-            Plot.ruleY([0]),
-            Plot.lineY(data, {x: "date", y: "value"}),
-            (index, scales, channels, dimensions, context) => {
-                const x1 = dimensions.marginLeft;
-                const x2 = dimensions.width - dimensions.marginRight;
-                const y1 = 0;
-                const y2 = dimensions.height;
-                const brushed = (event) => setStartEnd(event.selection?.map(scales.x.invert));
-                const brush = d3.brushX().extent([[x1, y1], [x2, y2]]).on("brush end", brushed);
-                return d3.create("svg:g").call(brush).node();
-            }
-            ]
-        });
+                const columnA = table.getColumn('a').toArray();
+                const columnB = table.getColumn('b').toArray();
 
-        document.getElementById("plot-container").appendChild(plot);
+                const data = columnA.map((a, index) => ({
+                    a,
+                    b: columnB[index]
+                }));
 
+                const plot = Plot.plot({
+                    marks: [
+                        Plot.line(data, { x: 'a', y: 'b' })
+                    ],
+                    x: { label: "Column A" },
+                    y: { label: "Column B" }
+                });
+
+                document.getElementById('plot-container').innerHTML = '';
+                document.getElementById('plot-container').appendChild(plot);
+
+            } //on message
+        };
+
+        ws.onopen = () => {
+            ws.send('Requesting data');
+        };
+
+
+        // const data = [
+        // {date: new Date(2023, 0, 1), value: 100},
+        // {date: new Date(2023, 0, 2), value: 110},
+        // // more data points...
+        // ];
+
+        // const plot = Plot.plot({
+        // marks: [
+        // Plot.ruleY([0]),
+        // Plot.lineY(data, {x: "date", y: "value"}),
+        // (index, scales, channels, dimensions, context) => {
+        //     const x1 = dimensions.marginLeft;
+        //     const x2 = dimensions.width - dimensions.marginRight;
+        //     const y1 = 0;
+        //     const y2 = dimensions.height;
+        //     const brushed = (event) => setStartEnd(event.selection?.map(scales.x.invert));
+        //     const brush = d3.brushX().extent([[x1, y1], [x2, y2]]).on("brush end", brushed);
+        //     return d3.create("svg:g").call(brush).node();
+        //     }
+        // ]
+        // });
+        // document.getElementById("plot-container").appendChild(plot);
     </script>
 </body>
 

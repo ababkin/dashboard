@@ -22,25 +22,25 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     // Provide websocket connection
-    leptos_server_signal::provide_websocket("ws://localhost:5000/ws").unwrap();
+    // leptos_server_signal::provide_websocket("ws://localhost:5000/ws").unwrap();
 
     // Create server signal
-    let event = create_server_signal::<WsEvent>("counter");
+    // let event = create_server_signal::<WsEvent>("counter");
 
     view! { 
-        <h2>Chartistry</h2>
-        <Chartistry/>
+        // <h2>Chartistry</h2>
+        // <Chartistry/>
 
-        <h2>Plotly</h2>
-        <Plotly/>
+        // <h2>Plotly</h2>
+        // <Plotly/>
 
-        <h2>Mermaid</h2>
-        <Mermaid/>
+        // <h2>Mermaid</h2>
+        // <Mermaid/>
 
-        <h2>Observable Plot</h2>
-        <ObservablePlot/>
+        // <h2>Observable Plot</h2>
+        // <ObservablePlot/>
 
-        <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
+        // <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
     }
 }
 
