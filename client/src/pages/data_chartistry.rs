@@ -1,4 +1,3 @@
-use crate::data::*;
 use leptos::*;
 use leptos_chartistry::*;
 // use leptos_server_signal::create_server_signal;
@@ -16,28 +15,33 @@ use std::io::Cursor;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+pub struct MyData {
+    pub decision_timestamp: f64, // Using f64 for simplicity; adjust as needed
+    pub running_avg_remove: f64,
+}
+
+impl MyData {
+    fn new(decision_timestamp: f64, running_avg_remove: f64) -> Self {
+        Self { decision_timestamp, running_avg_remove }
+    }
+}
+
 #[component]
 pub fn DataChartistry() -> impl IntoView {
     let (debug, _) = create_signal(false);
-
-    // leptos_server_signal::provide_websocket("ws://localhost:5000/ws").unwrap();
-
-    // Create server signal
-    // let event = create_server_signal::<WsEvent>("counter");
     let (data, set_data) = create_signal(vec![]);
 
     // Create WebSocket connection
-    // let ws = WebSocket::new("ws://localhost:5000/ws").unwrap();
     let ws = Rc::new(RefCell::new(WebSocket::new("ws://localhost:5000/ws").unwrap()));
     let ws_clone = ws.clone();
-    let set_data = set_data.clone();
+    let set_data_clone = set_data.clone();
 
     // On message event
     let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
         if let Ok(blob) = e.data().dyn_into::<Blob>() {
             let file_reader = FileReader::new().unwrap();
             let fr_c = file_reader.clone();
-            let set_data = set_data.clone();
+            let set_data = set_data_clone.clone();
             let onloadend_cb = Closure::once(Box::new(move || {
                 let array = Uint8Array::new(&fr_c.result().unwrap());
                 let arrow_data = array.to_vec();
@@ -48,14 +52,14 @@ pub fn DataChartistry() -> impl IntoView {
 
                 let mut data_vec = vec![];
                 while let Some(Ok(batch)) = reader.next() {
-                    let column_a = batch.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
-                    let column_b = batch.column(1).as_any().downcast_ref::<Float64Array>().unwrap();
+                    let column_timestamp = batch.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+                    let column_avg = batch.column(1).as_any().downcast_ref::<Float64Array>().unwrap();
 
                     for i in 0..batch.num_rows() {
-                        data_vec.push(json!({
-                            "a": column_a.value(i),
-                            "b": column_b.value(i)
-                        }));
+                        data_vec.push(MyData::new(
+                            column_timestamp.value(i) as f64,
+                            column_avg.value(i),
+                        ));
                     }
                 }
 
@@ -76,37 +80,20 @@ pub fn DataChartistry() -> impl IntoView {
     ws.borrow().set_onopen(Some(onopen_callback.as_ref().unchecked_ref()));
     onopen_callback.forget();
 
-
-    // Display the data
-    let display_data = move || {
-        data.get().iter().map(|d| {
-            let a = d["a"].as_i64().unwrap();
-            let b = d["b"].as_f64().unwrap();
-            view! {
-                <p>{format!("a: {}, b: {}", a, b)}</p>
-            }
-        }).collect::<Vec<_>>()
-    };
-
     view! { 
         <div>
             <h1>"Data from WebSocket"</h1>
-            {move || display_data()}
-            // {display_data()}
+            <LineChart debug data=data />
         </div>
     }
-
-    // view! {
-    //     <LineChart debug data=load_data() />
-    // }
 }
 
 #[component]
-pub fn LineChart(debug: ReadSignal<bool>, data: Signal<Vec<MyData>>) -> impl IntoView {
+pub fn LineChart(debug: ReadSignal<bool>, data: ReadSignal<Vec<MyData>>) -> impl IntoView {
     // Lines are added to the series
-    let series = Series::new(|data: &MyData| data.x)
-        .line(Line::new(|data: &MyData| data.y1).with_name("butterflies"))
-        .line(Line::new(|data: &MyData| data.y2).with_name("dragonflies"));
+    let series = Series::new(|data: &MyData| data.decision_timestamp)
+        .line(Line::new(|data: &MyData| data.running_avg_remove).with_name("running_avg_remove"));
+
     view! {
         <Chart
             aspect_ratio=AspectRatio::from_outer_height(300.0, 1.2)

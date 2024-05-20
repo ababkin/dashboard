@@ -30,3 +30,6 @@ url = "2.2.2"
 polars = "0.39"
 arrow = "51.0.0"
 parquet = "51.0.0"
+
+futures-util = "0.3"
+env_logger = "0.11"

@@ -5,7 +5,6 @@ use anyhow::{ Error, anyhow };
 
 mod pages;
 mod plots;
-mod data;
 use leptos_server_signal::create_server_signal;
 use serde::{Deserialize, Serialize};
 

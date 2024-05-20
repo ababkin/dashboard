@@ -8,11 +8,13 @@ use tracing_subscriber::FmtSubscriber;
 use std::net::SocketAddr;
 use axum::{
     extract::ws::{Message, WebSocket, WebSocketUpgrade},
+    extract::Extension,
     response::IntoResponse,
     routing::get,
-    Router
+    Router,
 };
-use tower_http::cors::{Any, CorsLayer};
+// use tower_http::cors::{Any, CorsLayer};
+use clickhouse::{Client, Row};
 
 
 
@@ -35,54 +37,28 @@ fn setup_tracing() -> Result<(), Error> {
     Ok(())
 }
 
-// #[tokio::main]
-// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
-//     let (event_sender, event_receiver) = mpsc::channel(CHAN_BOUND);
-
-//     let _ = task::spawn(async move {
-//         ws_server::run(event_receiver).await;
-//     });
-
-//     let mut cnt = 0;
-//     loop {
-//         event_sender.send(WsEvent::new(cnt)).await?;
-
-//         tokio::time::sleep(Duration::from_nanos(1_000_000_000)).await;
-//         cnt += 1;
-//     }
-// }
+fn get_ckz_client() -> Client {
+    let url = var("CKZ_URL").unwrap_or("http://localhost:8123".to_string());
+    let user = var("CKZ_USER").unwrap_or("default".to_string());
+    let password = var("CKZ_PASS").unwrap_or("123".to_string());
+    // let db = var("CKZ_DB").unwrap_or("emerald_logs".to_string());
+    
+    Client::default()
+        .with_url(&url)
+        .with_user(&user)
+        .with_password(&password)
+        // .with_database(&db)
+}
 
 #[tokio::main]
 async fn main() {
-    setup_tracing();
+    _ = setup_tracing();
 
-    // build our application with a single route
-    // let app = Router::new().route("/ws", get(ws_handler));
+    let client = get_ckz_client();
 
     let app = Router::new()
-        .route("/ws", get(move |ws: WebSocketUpgrade| {
-            // Use the cloned ws_list inside the closure
-            websocket_handler(ws)
-        }));
-
-    // let app = Router::new()
-    // .route("/ws", get(ws_handler))
-    // .layer(
-    //     CorsLayer::new()
-    //         .allow_origin(Any)
-    //         .allow_methods(Any)
-    //         .allow_headers(Any),
-    // );
-
-//     var wss = new WebSocketServer({ port: env.PORT, headers: {
-//         "Access-Control-Allow-Origin": "*",
-//         "Access-Control-Allow-Headers": "http://localhost:3000",
-//         "Access-Control-Allow-Methods": "PUT, GET, POST, DELETE, OPTIONS"
-// } });
-
-    // run our app with hyper
-    // `axum::Server` is a re-export of `hyper::Server`
+        .route("/ws", get(ws_handler))
+        .layer(Extension(client));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 5000));
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
@@ -94,12 +70,9 @@ async fn main() {
         .unwrap();
 }
 
-pub async fn websocket_handler(ws: WebSocketUpgrade) -> axum::response::Response {
-    debug!("upgrading to ws connection...");
-    ws.on_upgrade(|socket| data_server::handle_socket(socket))
+async fn ws_handler(
+    ws: WebSocketUpgrade,
+    Extension(client): Extension<Client>,
+) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| data_server::handle_socket(socket, client))
 }
-
-// async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
-//     debug!("upgrading to ws connection...");
-//     ws.on_upgrade(handle_socket)
-// }
