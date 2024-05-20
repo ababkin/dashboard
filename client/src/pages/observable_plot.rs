@@ -66,8 +66,14 @@ pub fn ObservablePlot() -> impl IntoView {
             Reflect::set(&rand, &JsValue::from_str("x"), &random_fn).unwrap();
 
 
+            // let value = json!({ "y": "count".to_string() });
+            // let json = value.as_object().unwrap();
+            // let bin_x_props = to_value(&json).unwrap();
+
+
             let bin_x_props = to_value(&BinXProps{ y: "count".to_string() }).unwrap();
-            // log_jsval(&bin_x_props);
+
+            log_jsval(&bin_x_props);
             // log_jsval(&rand);
             let bin_x = Plot::bin_x(&bin_x_props, &rand);
             // log(&bin_x);

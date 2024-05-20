@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
 
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
     <link data-trunk rel="rust" data-wasm-opt="z" />
     <link data-trunk rel="css" href="assets/demo.css" />
     <link data-trunk rel="css" href="assets/demo-normalise.css" />
@@ -32,6 +34,46 @@
 
 <body>
     <!-- <div id="myplot"></div> -->
+    <div id="plot-container"></div>
+
+    <script type="module">
+
+        const data = [
+        {date: new Date(2023, 0, 1), value: 100},
+        {date: new Date(2023, 0, 2), value: 110},
+        // more data points...
+        ];
+
+        // const startEnd = Mutable(null);
+        // const setStartEnd = (se) => startEnd.value = se;
+
+        const setStartEnd = (selection) => {
+            if (selection) {
+                console.log("Selected range:", selection);
+            } else {
+                console.log("Selection cleared");
+            }
+            };
+
+        const plot = Plot.plot({
+            marks: [
+            Plot.ruleY([0]),
+            Plot.lineY(data, {x: "date", y: "value"}),
+            (index, scales, channels, dimensions, context) => {
+                const x1 = dimensions.marginLeft;
+                const x2 = dimensions.width - dimensions.marginRight;
+                const y1 = 0;
+                const y2 = dimensions.height;
+                const brushed = (event) => setStartEnd(event.selection?.map(scales.x.invert));
+                const brush = d3.brushX().extent([[x1, y1], [x2, y2]]).on("brush end", brushed);
+                return d3.create("svg:g").call(brush).node();
+            }
+            ]
+        });
+
+        document.getElementById("plot-container").appendChild(plot);
+
+    </script>
 </body>
 
 </html>
