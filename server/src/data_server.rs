@@ -34,7 +34,7 @@ pub async fn handle_socket(mut socket: WebSocket, client: Client) {
         let query = "WITH running_totals AS (
             SELECT
                 toStartOfInterval(decision_timestamp, INTERVAL 1 HOUR) AS interval_start,
-                countIf(action_type = 'remove') OVER (ORDER BY toStartOfInterval(decision_timestamp, INTERVAL 1 HOUR) ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_count_remove,
+                countIf(action_type = 'send_mail_action') OVER (ORDER BY toStartOfInterval(decision_timestamp, INTERVAL 1 HOUR) ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_count_remove,
                 count(*) OVER (ORDER BY toStartOfInterval(decision_timestamp, INTERVAL 1 HOUR) ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_count_total
             FROM
                 event_outcomes

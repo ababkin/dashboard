@@ -14,15 +14,18 @@ use js_sys::Uint8Array;
 use std::io::Cursor;
 use std::rc::Rc;
 use std::cell::RefCell;
+use chrono::prelude::*;
+use std::str::FromStr;
+
 
 pub struct MyData {
-    pub decision_timestamp: f64, // Using f64 for simplicity; adjust as needed
-    pub running_avg_remove: f64,
+    pub decision_timestamp: DateTime<Local>, //i64,
+    pub running_avg: f64,
 }
 
 impl MyData {
-    fn new(decision_timestamp: f64, running_avg_remove: f64) -> Self {
-        Self { decision_timestamp, running_avg_remove }
+    fn new(decision_timestamp: DateTime<Local>, running_avg: f64) -> Self {
+        Self { decision_timestamp, running_avg }
     }
 }
 
@@ -57,7 +60,7 @@ pub fn DataChartistry() -> impl IntoView {
 
                     for i in 0..batch.num_rows() {
                         data_vec.push(MyData::new(
-                            column_timestamp.value(i) as f64,
+                            DateTime::from_timestamp_nanos(column_timestamp.value(i)).with_timezone(&Local),
                             column_avg.value(i),
                         ));
                     }
@@ -88,33 +91,87 @@ pub fn DataChartistry() -> impl IntoView {
     }
 }
 
+
+
 #[component]
 pub fn LineChart(debug: ReadSignal<bool>, data: ReadSignal<Vec<MyData>>) -> impl IntoView {
     // Lines are added to the series
     let series = Series::new(|data: &MyData| data.decision_timestamp)
-        .line(Line::new(|data: &MyData| data.running_avg_remove).with_name("running_avg_remove"));
+        .line(Line::new(|data: &MyData| data.running_avg).with_name("running_avg_rate"))
+        // .with_x_range(0.0, 10.0)
+        .with_y_range(0.0, 0.001); // TODO make the max dynamic
+
+    // Axis
+    let x_periods = Timestamps::from_periods(Period::all());
+    let x_ticks = TickLabels::from_generator(x_periods.clone());
+    let y_ticks = TickLabels::aligned_floats();
+
+    let (min_x, max_x) = (series.min_x, series.max_x);
+    let (min_y, max_y) = (series.min_y, series.max_y);
+    let series_colours = series.colours;
+    let series_len = series.len();
+
 
     view! {
-        <Chart
-            aspect_ratio=AspectRatio::from_outer_height(300.0, 1.2)
-            debug=debug
-            series=series
-            data=data
+        <div style="width: 100%; background: white !important;">
+            <Chart
+                aspect_ratio=AspectRatio::from_outer_height(1500.0, 3.0)
+                debug=debug
+                series=series
+                data=data
 
-            // Decorate our chart
-            top=RotatedLabel::middle("My garden")
-            left=TickLabels::aligned_floats()
-            bottom=Legend::end()
-            inner=[
-                // Standard set of inner layout options
-                AxisMarker::left_edge().into_inner(),
-                AxisMarker::bottom_edge().into_inner(),
-                XGridLine::default().into_inner(),
-                YGridLine::default().into_inner(),
-                YGuideLine::over_mouse().into_inner(),
-                XGuideLine::over_data().into_inner(),
-            ]
-            tooltip=Tooltip::left_cursor().show_x_ticks(false)
-        />
+                top=RotatedLabel::middle("Avg Rate")
+                left=TickLabels::aligned_floats()
+                // bottom=Legend::end()
+                bottom=vec![x_ticks.clone().into_edge(),
+                            // RotatedLabel::middle("This demo shows most of the available options. Edit things below...").into_edge(),
+                ]
+
+                // inner=inner.get().into_inner()
+                inner=[
+                    AxisMarker::horizontal_zero().into_inner(),
+                    AxisMarker::left_edge().into_inner(),
+                    XGridLine::from_ticks(x_ticks).into_inner(),
+                    YGridLine::from_ticks(y_ticks).into_inner(),
+                    XGuideLine::over_data().into_inner(),
+                    YGuideLine::over_mouse().into_inner(),
+                    // AxisMarker::left_edge().into_inner(),
+                    // AxisMarker::bottom_edge().into_inner(),
+                    // XGridLine::default().into_inner(),
+                    // YGridLine::default().into_inner(),
+                    // YGuideLine::over_mouse().into_inner(),
+                    // XGuideLine::over_data().into_inner(),
+                ]
+                tooltip=Tooltip::left_cursor().show_x_ticks(false)
+            />
+        </div>
     }
 }
+
+// #[component]
+// pub fn Example(debug: Signal<bool>, data: Signal<Vec<MyData>>) -> impl IntoView {
+//     let series = Series::new(|data: &MyData| data.x)
+//         .line(|data: &MyData| data.y1)
+//         .line(|data: &MyData| data.y2)
+//         .with_x_range(0.0, 10.0)
+//         .with_y_range(-10.0, 10.0);
+//     view! {
+//         <Chart
+//             aspect_ratio=AspectRatio::from_outer_height(300.0, 1.2)
+//             debug=debug
+//             series=series
+//             data=data
+
+//             inner=vec![
+//                 // Axis markers run along the edge of an axis, usually along the edge
+//                 AxisMarker::bottom_edge().into_inner(),
+//                 // However they can also be placed at zero (if shown)
+//                 AxisMarker::horizontal_zero().into_inner(),
+//                 // Or at the top edge if that makes sense for your chart
+//                 AxisMarker::top_edge().into_inner(),
+//                 // We can also remove embellishments (the arrow) from the marker
+//                 AxisMarker::left_edge().with_arrow(false).into_inner(),
+//             ]
+//         />
+//     }
+// }
