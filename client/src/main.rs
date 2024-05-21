@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_meta::{provide_meta_context, Meta, Stylesheet, Title};
 use anyhow::{ Error, anyhow };
 // use leptos_router::*;
-use leptonic::prelude::*;
+use leptonic::components::prelude::*;
 
 mod types;
 mod pages;
@@ -13,10 +13,10 @@ use serde::{Deserialize, Serialize};
 use shared::types::*;
 
 use crate::pages::chartistry::Chartistry;
-use crate::pages::event_stats::*;
 use crate::pages::plotly::Plotly;
 use crate::pages::mermaid::Mermaid;
 use crate::pages::observable_plot::ObservablePlot;
+use crate::pages::event_stats::*;
 
 
 #[component]
