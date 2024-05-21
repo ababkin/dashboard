@@ -2,7 +2,6 @@ use leptos::*;
 use leptos_meta::{provide_meta_context, Meta, Stylesheet, Title};
 use anyhow::{ Error, anyhow };
 // use leptos_router::*;
-use leptonic::prelude::*;
 
 mod types;
 mod pages;
@@ -30,35 +29,23 @@ pub fn App() -> impl IntoView {
     // let event = create_server_signal::<WsEvent>("counter");
 
     view! { 
-        <Meta name="charset" content="UTF-8"/>
-        <Meta name="description" content="Leptonic CSR template"/>
-        <Meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <Meta name="theme-color" content="#e66956"/>
 
-        <Stylesheet id="leptos" href="/pkg/leptonic-template-ssr.css"/>
-        <Stylesheet href="https://fonts.googleapis.com/css?family=Roboto&display=swap"/>
+        // <h2>Chartistry</h2>
+        // <Chartistry/>
 
-        <Title text="Leptonic CSR template"/>
+        // <h2>Plotly</h2>
+        // <Plotly/>
 
-        <Root default_theme=LeptonicTheme::default()>
+        // <h2>Mermaid</h2>
+        // <Mermaid/>
 
-            // <h2>Chartistry</h2>
-            // <Chartistry/>
+        // <h2>Observable Plot</h2>
+        // <ObservablePlot/>
 
-            // <h2>Plotly</h2>
-            // <Plotly/>
+        <h2>Event Stats</h2>
+        <EventStats/>
 
-            // <h2>Mermaid</h2>
-            // <Mermaid/>
-
-            // <h2>Observable Plot</h2>
-            // <ObservablePlot/>
-
-            <h2>Event Stats</h2>
-            <EventStats/>
-
-            // <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
-        </Root>
+        // <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
 
     }
 }
