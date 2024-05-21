@@ -1,7 +1,5 @@
-use axum::{
-    extract::ws::{Message, WebSocket, WebSocketUpgrade},
-};
-use futures::{sink::SinkExt, stream::StreamExt};
+use axum::extract::ws::{Message, WebSocket};
+use futures::stream::StreamExt;
 use polars::prelude::*;
 use parquet::arrow::arrow_writer::ArrowWriter;
 use parquet::file::properties::WriterProperties;
