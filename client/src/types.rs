@@ -26,7 +26,7 @@ impl EventType {
             EventType::Snooze => "snooze",
             EventType::Remove => "remove",
             EventType::Unsubscribe => "unsubscribe",
-            EventType::SendEmailAction => "send_email_action",
+            EventType::SendEmailAction => "send_mail_action",
         }.to_string()
     }
 }

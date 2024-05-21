@@ -1,21 +1,5 @@
 use leptos::*;
 use leptos_chartistry::*;
-// use leptos_server_signal::create_server_signal;
-use leptos_server_signal::*;
-use web_sys::{Blob, FileReader, MessageEvent, WebSocket};
-use serde_json::Value;
-use std::sync::{Arc, Mutex};
-use wasm_bindgen::JsCast;
-use wasm_bindgen::prelude::*;
-use arrow::ipc::reader::StreamReader;
-use arrow::array::{Int64Array, Float64Array};
-use serde_json::json;
-use js_sys::Uint8Array;
-use std::io::Cursor;
-use std::rc::Rc;
-use std::cell::RefCell;
-use chrono::prelude::*;
-use std::str::FromStr;
 
 use crate::types::*;
 
@@ -24,9 +8,9 @@ use crate::types::*;
 pub fn LineChart(debug: ReadSignal<bool>, data: ReadSignal<Vec<MyData>>) -> impl IntoView {
     // Lines are added to the series
     let series = Series::new(|data: &MyData| data.decision_timestamp)
-        .line(Line::new(|data: &MyData| data.running_avg).with_name("running_avg_rate"))
+        .line(Line::new(|data: &MyData| data.running_avg).with_name("running_avg_rate"));
         // .with_x_range(0.0, 10.0)
-        .with_y_range(0.0, 0.001); // TODO make the max dynamic
+        // .with_y_range(0.0, 0.001); // TODO make the max dynamic
 
     // Axis
     let x_periods = Timestamps::from_periods(Period::all());

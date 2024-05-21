@@ -13,7 +13,7 @@ use crate::components::{
 };
 
 
-pub fn DataChartistry() -> impl IntoView {
+pub fn EventStats() -> impl IntoView {
     
     let (debug, _) = create_signal(false);
     let (data, set_data) = create_signal(vec![]);

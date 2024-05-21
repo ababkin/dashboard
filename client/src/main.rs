@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use shared::types::*;
 
 use crate::pages::chartistry::Chartistry;
-use crate::pages::data_chartistry::DataChartistry;
+use crate::pages::event_stats::*;
 use crate::pages::plotly::Plotly;
 use crate::pages::mermaid::Mermaid;
 use crate::pages::observable_plot::ObservablePlot;
@@ -54,8 +54,8 @@ pub fn App() -> impl IntoView {
             // <h2>Observable Plot</h2>
             // <ObservablePlot/>
 
-            <h2>Data fed chartistry</h2>
-            <DataChartistry/>
+            <h2>Event Stats</h2>
+            <EventStats/>
 
             // <h1>"Count: " {move || event.get().q_length.to_string()}</h1> 
         </Root>
