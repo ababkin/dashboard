@@ -35,7 +35,7 @@ pub fn EventStats() -> impl IntoView {
     view! { 
         <div>
             <ChartData set_data />
-            <LineChart debug data event_types/>
+            <LineChart debug data/>
 
         </div>
         // <Select
