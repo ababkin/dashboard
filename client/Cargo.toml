@@ -25,6 +25,7 @@ anyhow = "1.0.82"
 chrono = "0.4"
 console_error_panic_hook = "0.1"
 console_log = "1.0"
+flate2 = "1.0"
 js-sys = "0.3"
 leptonic = { version = "0.5", git = "https://github.com/lpotthast/leptonic", branch = "dev", features = ["csr", "nightly"] }
 leptos = { version = "0.6.11", features = ["csr", "serde", "nightly"] }

@@ -1,18 +1,17 @@
 use axum::extract::ws::{Message, WebSocket};
 use futures::stream::StreamExt;
 use polars::prelude::*;
-use parquet::arrow::arrow_writer::ArrowWriter;
-use parquet::file::properties::WriterProperties;
 use arrow::array::{Float64Array, Int64Array};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::ipc::writer::StreamWriter;
 use arrow::record_batch::RecordBatch;
 use std::sync::Arc;
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 use tracing::{debug, error, info, instrument, span, warn, Level};
 use clickhouse::{query, Client, Row};
 use serde::Deserialize;
-
+use flate2::write::GzEncoder;
+use flate2::Compression;
 
 #[derive(Debug, Deserialize, Row)]
 struct EventOutcome {
@@ -23,7 +22,6 @@ struct EventOutcome {
     running_avg_send_mail_action: f64,
 }
 
-        // toDateTime64(interval_start, 9) AS decision_timestamp,  -- Cast interval_start to DateTime64(9)
 fn mk_query() -> String {
     format!("WITH events_per_minute AS (
         SELECT
@@ -39,7 +37,7 @@ fn mk_query() -> String {
     ),
     running_averages AS (
         SELECT
-            toDateTime64(interval_start, 9) AS interval_start,  -- Cast interval_start to DateTime64(9)
+            toDateTime64(interval_start, 9) AS interval_start,
             avg(count_snooze) OVER (ORDER BY interval_start ROWS BETWEEN 60 PRECEDING AND CURRENT ROW) AS avg_snooze,
             avg(count_remove) OVER (ORDER BY interval_start ROWS BETWEEN 60 PRECEDING AND CURRENT ROW) AS avg_remove,
             avg(count_unsubscribe) OVER (ORDER BY interval_start ROWS BETWEEN 60 PRECEDING AND CURRENT ROW) AS avg_unsubscribe,
@@ -106,10 +104,15 @@ pub async fn handle_socket(mut socket: WebSocket, client: Client) {
                     ipc_writer.finish().unwrap();
                 }
 
-                // Send the binary data over WebSocket
-                let data = ipc_buffer.into_inner();
-                debug!("writing data to ws connection: {:?}", data);
-                if socket.send(Message::Binary(data)).await.is_err() {
+                // Compress the serialized Arrow IPC stream data
+                let ipc_data = ipc_buffer.into_inner();
+                let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+                encoder.write_all(&ipc_data).unwrap();
+                let compressed_data = encoder.finish().unwrap();
+
+                // Send the compressed binary data over WebSocket
+                debug!("writing compressed data to ws connection: {:?}", compressed_data);
+                if socket.send(Message::Binary(compressed_data)).await.is_err() {
                     break;
                 }
             }
